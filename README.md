@@ -5,10 +5,6 @@
 | [backend/](backend/) | Spring Boot 2.7 API, Java 8, Oracle (schema `CUBEDB`) | `cube.war` → `/cube` |
 | [frontend/](frontend/) | React 19 + MUI single-page app | `frontend.war` → `/frontend` |
 
-Both WARs go on the **same WebLogic 14.1.1.0.0 server**, so the browser calls `/cube/api/...` on the same origin (no CORS).
-Users open `http://<weblogic-host>:<port>/frontend/`.
-
----
 
 ## 1. Database (schema CUBEDB)
 
@@ -23,8 +19,7 @@ the new backend, or login fails):
 - `04_reporting_manager.sql`: reporting manager, assigned reviewer and bookmarks (already run).
 - `05_employee_details.sql`: employee ID, role/designation and "must change password".
 
-For a brand-new empty schema (another environment) run instead: `01_schema.sql`, `02_seed.sql`
-(first login `admin` / `Admin@123`), `03_oracle_text.sql` (needs `GRANT CTXAPP`).
+
 
 **Roles (from the existing data):**
 
@@ -38,9 +33,7 @@ Change them in **Admin → Groups & permissions**. Users `manish.employee` and `
 so they can sign in but see nothing until one is assigned (Admin → Users → Edit).
 
 **Old attachments:** 2 are stored inside the database and work as they are. The other 111 were saved on the disks of
-the machines that ran the previous version (`D:\cube\local-storage\…`, `C:\Users\Manish.Choudhary\…\local-storage\…`).
-Copy those `local-storage` folders into one folder on the server and set `CUBE_LEGACY_FILES_DIR` to it
-(comma-separate several). Files that can't be found show "uploaded with the previous version … not available on this server".
+the machines that ran the previous version.
 
 **Onboarding teams (managers and employees):**
 
@@ -78,8 +71,8 @@ Override any of them with environment variables or `-D` JVM options (WebLogic: `
 
 | Setting | Default | Notes |
 |---|---|---|
-| `CUBE_DB_URL` | `jdbc:oracle:thin:@//10.20.5.10:1521/FCUBS147X` | Company database (TNS `FCUBS147X`) |
-| `CUBE_DB_USERNAME` / `CUBE_DB_PASSWORD` | `CUBEDB` / `CUBEDB` | Prefer setting the password on the server rather than keeping it in the file |
+| `CUBE_DB_URL` | `db url` | Company database (TNS `schema`) |
+| `CUBE_DB_USERNAME` / `CUBE_DB_PASSWORD` | `username` / `password` | Prefer setting the password on the server rather than keeping it in the file |
 | `CUBE_JWT_SECRET` | *(unset → random per restart)* | Set 32+ random characters so logins survive restarts |
 | `CUBE_STORAGE_TYPE` | `github` | `local` stores files on the server disk instead |
 | `CUBE_GITHUB_OWNER` / `CUBE_GITHUB_REPO` / `CUBE_GITHUB_BRANCH` / `CUBE_GITHUB_TOKEN` | `CHANGE_ME_…` / `main` | Until set, uploads/downloads show “File storage is not configured yet” |
@@ -98,8 +91,8 @@ cd frontend && npm install && npm run war   # -> frontend/frontend.war (Node 18.
 
 1. **Server start arguments** (Admin Console → Environment → Servers → *server* → Server Start → Arguments, or `setUserOverrides`):
    ```
-   -DCUBE_DB_URL=jdbc:oracle:thin:@//10.20.5.10:1521/FCUBS147X
-   -DCUBE_DB_PASSWORD=CUBEDB
+   -DCUBE_DB_URL=db url
+   -DCUBE_DB_PASSWORD=db schema pass
    -DCUBE_JWT_SECRET=<32+ random characters>
    -DCUBE_GITHUB_OWNER=<owner> -DCUBE_GITHUB_REPO=<repo> -DCUBE_GITHUB_TOKEN=<token>
    ```
@@ -132,7 +125,7 @@ New uploads go to GitHub from the restart onward. Files that haven't been copied
 ```bash
 # Terminal 1 – backend on http://127.0.0.1:8080/cube
 cd backend
-set CUBE_DB_URL=jdbc:oracle:thin:@//10.20.5.10:1521/FCUBS147X      # PowerShell: $env:CUBE_DB_URL="..."
+set CUBE_DB_URL=jdbc:oracle:thin:@//db connection      # PowerShell: $env:CUBE_DB_URL="..."
 set CUBE_STORAGE_TYPE=local                                         # until GitHub details are ready
 mvn spring-boot:run
 
@@ -141,7 +134,7 @@ cd frontend
 npm install
 npm run dev
 ```
-Sign in with your existing CUBEDB accounts (e.g. `admin` / `Admin@123` for administration; managers and employees use their own passwords).
+Sign in with your existing CUBEDB accounts 
 
 **Option B – no database needed (in-memory demo data):**
 
