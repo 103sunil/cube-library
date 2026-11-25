@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CUBE Knowledge Repository – How it works</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm 18mm 15mm; }
+  :root {
+    --ink: #0B1020; --muted: #5B6478; --line: #E3E6EF; --soft: #F5F6FB;
+    --indigo: #4F46E5; --indigo-d: #3730A3; --violet: #7C3AED; --teal: #0E9F8E; --amber: #B45309; --rose: #BE123C;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Segoe UI", Inter, Roboto, Arial, sans-serif; color: var(--ink); font-size: 9.9pt; line-height: 1.45; }
+  h1, h2, h3 { font-family: "Segoe UI", Inter, Arial, sans-serif; letter-spacing: -0.01em; line-height: 1.2; }
+  h2 { font-size: 19pt; margin: 0 0 4px; color: var(--ink); break-after: avoid; page-break-after: avoid; }
+  .flow { margin-top: 26px; }
+  h2 .num { color: var(--indigo); margin-right: 8px; }
+  .lead { color: var(--muted); font-size: 11pt; margin: 0 0 14px; }
+  h3 { font-size: 12pt; margin: 14px 0 5px; break-after: avoid; page-break-after: avoid; color: var(--indigo-d); }
+  p { margin: 6px 0; }
+  ul { margin: 6px 0 6px 18px; padding: 0; } li { margin: 2px 0; }
+  code, .mono { font-family: Consolas, "Cascadia Mono", monospace; font-size: 9pt; background: var(--soft); padding: 1px 4px; border-radius: 4px; }
+  .section { page-break-before: always; }
+  .avoid { page-break-inside: avoid; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 9.4pt; }
+  th { text-align: left; background: #EEF0F8; color: var(--indigo-d); font-weight: 700; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  td { padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr { page-break-inside: avoid; }
+  .card { border: 1px solid var(--line); border-radius: 12px; padding: 9px 12px; margin: 8px 0; background: #fff; page-break-inside: avoid; }
+  .note { border-left: 4px solid var(--indigo); background: #EEF2FF; padding: 9px 12px; border-radius: 0 10px 10px 0; margin: 10px 0; page-break-inside: avoid; }
+  .warn { border-left-color: var(--amber); background: #FFF7E6; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .grid4 .card ul { margin-left: 14px; } .grid4 .card { font-size: 9.2pt; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .stat { border: 1px solid var(--line); border-radius: 12px; padding: 7px 10px; background: #fff; }
+  .stat b { display: block; font-size: 17pt; color: var(--indigo); line-height: 1.1; }
+  .stat span { color: var(--muted); font-size: 9pt; }
+  .tag { display: inline-block; font-size: 8pt; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: #EEF2FF; color: var(--indigo-d); margin-right: 4px; }
+  .t-people { background: #E0F2FE; color: #075985; } .t-know { background: #EDE9FE; color: #5B21B6; } .t-sec { background: #FFE4E6; color: #9F1239; }
+  figure { margin: 10px 0; page-break-inside: avoid; }
+  figure img { width: 100%; border: 1px solid var(--line); border-radius: 10px; }
+  figcaption { color: var(--muted); font-size: 8.8pt; margin-top: 4px; }
+  .steps { counter-reset: s; list-style: none; margin: 8px 0; padding: 0; }
+  .steps > li { counter-increment: s; position: relative; padding: 7px 10px 7px 40px; border-bottom: 1px dashed var(--line); page-break-inside: avoid; }
+  .steps > li::before { content: counter(s); position: absolute; left: 6px; top: 7px; width: 24px; height: 24px; border-radius: 8px; background: var(--indigo); color: #fff; font-weight: 700; font-size: 9pt; display: grid; place-items: center; }
+  .where { font-size: 8pt; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 1px 6px; border-radius: 4px; margin-right: 6px; }
+  .w-ui { background: #DBEAFE; color: #1E40AF; } .w-api { background: #EDE9FE; color: #5B21B6; } .w-db { background: #DCFCE7; color: #166534; } .w-gh { background: #F3F4F6; color: #111827; }
+  .sql { display: block; margin-top: 4px; white-space: pre-wrap; font-family: Consolas, monospace; font-size: 8.6pt; background: #0F172A; color: #E2E8F0; padding: 7px 9px; border-radius: 8px; }
+  .toc a { color: var(--ink); text-decoration: none; } .toc li { margin: 3px 0; }
+  /* Cover */
+  .cover { height: 260mm; display: flex; flex-direction: column; justify-content: space-between; padding: 22mm 14mm 14mm; border-radius: 18px; color: #fff;
+    background: radial-gradient(600px 300px at 15% 0%, rgba(99,102,241,.6), transparent 60%), radial-gradient(500px 300px at 95% 15%, rgba(168,85,247,.55), transparent 60%), linear-gradient(135deg, #1E1B4B 0%, #312E81 45%, #4C1D95 100%); }
+  .cover h1 { font-size: 34pt; margin: 0 0 10px; color: #fff; }
+  .cover .sub { font-size: 14pt; opacity: .88; max-width: 150mm; }
+  .cover .meta { font-size: 10pt; opacity: .8; }
+  .chip { display: inline-block; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.12); border-radius: 999px; padding: 4px 12px; font-size: 9.5pt; margin: 0 6px 6px 0; }
+  svg text { font-family: "Segoe UI", Arial, sans-serif; }
+</style>
+</head>
+<body>
+
+<!-- ============================ COVER ============================ -->
+<div class="cover">
+  <div>
+    <div class="chip">Internal · Profinch</div>
+    <div class="chip">November 2026</div>
+  </div>
+  <div>
+    <h1>CUBE Knowledge Repository</h1>
+    <div class="sub">What it is, how it works from first principles, how every click travels through the screen, the server and the database, and what we have built.</div>
+  </div>
+  <div class="meta">
+    Spring Boot 2.7 backend (<span class="mono" style="background:rgba(255,255,255,.15);color:#fff">cube.war</span>) · React frontend (<span class="mono" style="background:rgba(255,255,255,.15);color:#fff">frontend.war</span>) · Oracle schema CUBEDB · Oracle WebLogic 14.1.1 · Attachments in a private GitHub repository
+  </div>
+</div>
+
+<!-- ============================ 1. SUMMARY ============================ -->
+<div class="section">
+  <h2><span class="num">1</span>In one page</h2>
+  <p class="lead">CUBE is the company's internal library of know-how: fixes, guides, runbooks and documents, written by employees, checked by their manager, and searchable by everyone.</p>
+
+  <h3>The problem it solves</h3>
+  <p>Useful knowledge (how to fix an EOD failure, how to set up the VPN, a release checklist) usually lives in people's heads, chats and personal folders. When the person is busy or leaves, the knowledge is gone. CUBE gives it one home with three guarantees:</p>
+  <ul>
+    <li><b>Findable</b>: one search box over titles, descriptions and keywords, with preview of PDF, Word, Excel and PowerPoint files in the browser.</li>
+    <li><b>Trustworthy</b>: nothing becomes visible to everyone until the author's manager approves it.</li>
+    <li><b>Controlled</b>: who can do what is decided by roles stored in the database, and every important action is recorded in an audit log.</li>
+  </ul>
+
+  <h3>What we achieved</h3>
+  <div class="grid3">
+    <div class="stat"><b>14</b><span>application tables in Oracle (CUBEDB), upgraded in place, existing data kept</span></div>
+    <div class="stat"><b>67</b><span>REST API endpoints in the backend</span></div>
+    <div class="stat"><b>10</b><span>screens: Login, Discover, Submit, My uploads, Bookmarks, Approvals, My team, Admin, item detail, edit</span></div>
+    <div class="stat"><b>3</b><span>access levels (Employee, Manager/VP, Administrator) built on 13 permission codes</span></div>
+    <div class="stat"><b>76</b><span>automated tests (33 backend, 43 frontend), all passing</span></div>
+    <div class="stat"><b>2</b><span>deployable files for WebLogic, with all configuration inside</span></div>
+  </div>
+
+  <h3>Main features</h3>
+  <div class="grid4">
+    <div class="card"><b>For everyone</b><ul>
+      <li>Discover page with search that matches the start of words ("flex" finds "flexcube") and falls back to text inside words</li>
+      <li>Preview of PDF, images, text, Word, Excel and PowerPoint in the browser</li>
+      <li>Bookmarks, "My uploads" with drafts, change own password</li></ul></div>
+    <div class="card"><b>For authors</b><ul>
+      <li>Submit with title, description, keywords and at least one file (max 10 MB each)</li>
+      <li>Save drafts; edit and resubmit after a rejection (with the reason shown)</li>
+      <li>Upload goes automatically to the right approver</li></ul></div>
+    <div class="card"><b>For managers / VPs</b><ul>
+      <li>Approvals queue with approve / reject (reason required)</li>
+      <li>"My team": everyone below them, including people under team leads; add, edit, reset password, delete leavers</li>
+      <li>Their own uploads publish directly</li></ul></div>
+    <div class="card"><b>For administrators</b><ul>
+      <li>Users (create, import from CSV, delete/restore), groups and permissions, file storage, audit log</li>
+      <li>Hierarchy rules enforced: report only to a Team Lead or higher, never to someone below</li>
+      <li>First sign-in with a temporary password forces a new password</li></ul></div>
+  </div>
+</div>
+
+<!-- ============================ CONTENTS ============================ -->
+<div class="section toc">
+  <h2>Contents</h2>
+  <ol>
+    <li>In one page</li>
+    <li>First principles: what a web application is made of</li>
+    <li>How CUBE is put together and deployed</li>
+    <li>Who can do what: users, roles, permissions and the reporting line</li>
+    <li>The database: all 14 tables and what each one is for</li>
+    <li>The life of a knowledge item</li>
+    <li>Tracing requests end to end (screen → server → database → file store)
+      <ul><li>7.1 Signing in &nbsp;·&nbsp; 7.2 Every request after that &nbsp;·&nbsp; 7.3 Submitting a document &nbsp;·&nbsp; 7.4 Approving it &nbsp;·&nbsp; 7.5 Searching &nbsp;·&nbsp; 7.6 Opening a file &nbsp;·&nbsp; 7.7 Adding a team member &nbsp;·&nbsp; 7.8 Someone leaves</li></ul></li>
+    <li>Security built in</li>
+    <li>The screens</li>
+    <li>Running it: deployment, configuration and database scripts</li>
+    <li>Status, limits and next steps</li>
+    <li>Appendix: all API endpoints</li>
+  </ol>
+</div>
+
+<!-- ============================ 2. FIRST PRINCIPLES ============================ -->
+<div class="flow">
+  <h2><span class="num">2</span>First principles: what a web application is made of</h2>
+  <p class="lead">Every web application, CUBE included, is four parts talking to each other in a fixed order. Understanding these four parts is enough to understand everything else in this document.</p>
+
+  <figure class="avoid">
+  <svg viewBox="0 0 760 210" width="100%" xmlns="http://www.w3.org/2000/svg">
+    <defs><marker id="a" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#4F46E5"/></marker></defs>
+    <g font-size="12">
+      <rect x="10" y="40" width="150" height="110" rx="14" fill="#DBEAFE" stroke="#93C5FD"/>
+      <text x="85" y="70" text-anchor="middle" font-weight="700" font-size="14" fill="#1E3A8A">1. Browser</text>
+      <text x="85" y="92" text-anchor="middle" fill="#1E3A8A">Shows the screens</text>
+      <text x="85" y="110" text-anchor="middle" fill="#1E3A8A">React app from</text>
+      <text x="85" y="127" text-anchor="middle" fill="#1E3A8A">frontend.war</text>
+      <rect x="205" y="40" width="160" height="110" rx="14" fill="#EDE9FE" stroke="#C4B5FD"/>
+      <text x="285" y="70" text-anchor="middle" font-weight="700" font-size="14" fill="#4C1D95">2. Server (API)</text>
+      <text x="285" y="92" text-anchor="middle" fill="#4C1D95">Checks who you are</text>
+      <text x="285" y="110" text-anchor="middle" fill="#4C1D95">and the rules</text>
+      <text x="285" y="127" text-anchor="middle" fill="#4C1D95">cube.war (Spring Boot)</text>
+      <rect x="410" y="15" width="160" height="80" rx="14" fill="#DCFCE7" stroke="#86EFAC"/>
+      <text x="490" y="45" text-anchor="middle" font-weight="700" font-size="14" fill="#14532D">3. Database</text>
+      <text x="490" y="66" text-anchor="middle" fill="#14532D">Oracle CUBEDB</text>
+      <text x="490" y="82" text-anchor="middle" fill="#14532D">facts: users, items, ...</text>
+      <rect x="410" y="110" width="160" height="80" rx="14" fill="#F3F4F6" stroke="#D1D5DB"/>
+      <text x="490" y="140" text-anchor="middle" font-weight="700" font-size="14" fill="#111827">4. File store</text>
+      <text x="490" y="161" text-anchor="middle" fill="#111827">GitHub private repo</text>
+      <text x="490" y="177" text-anchor="middle" fill="#111827">the attached files</text>
+      <path d="M160,85 L203,85" stroke="#4F46E5" stroke-width="2.2" marker-end="url(#a)"/>
+      <path d="M205,110 L162,110" stroke="#4F46E5" stroke-width="2.2" marker-end="url(#a)"/>
+      <text x="182" y="78" text-anchor="middle" font-size="10" fill="#4F46E5">request</text>
+      <text x="182" y="125" text-anchor="middle" font-size="10" fill="#4F46E5">JSON</text>
+      <path d="M365,75 L408,55" stroke="#4F46E5" stroke-width="2.2" marker-end="url(#a)"/>
+      <text x="380" y="52" font-size="10" fill="#4F46E5">SQL</text>
+      <path d="M365,120 L408,145" stroke="#4F46E5" stroke-width="2.2" marker-end="url(#a)"/>
+      <text x="372" y="152" font-size="10" fill="#4F46E5">HTTPS</text>
+      <rect x="600" y="40" width="150" height="110" rx="14" fill="#FFF7E6" stroke="#FCD34D"/>
+      <text x="675" y="68" text-anchor="middle" font-weight="700" font-size="13" fill="#78350F">Golden rules</text>
+      <text x="675" y="90" text-anchor="middle" font-size="11" fill="#78350F">Browser never touches</text>
+      <text x="675" y="106" text-anchor="middle" font-size="11" fill="#78350F">the database directly.</text>
+      <text x="675" y="126" text-anchor="middle" font-size="11" fill="#78350F">Server re-checks every</text>
+      <text x="675" y="142" text-anchor="middle" font-size="11" fill="#78350F">rule on every request.</text>
+    </g>
+  </svg>
+  <figcaption>The four parts of CUBE and how they talk. Arrows show who calls whom.</figcaption>
+  </figure>
+
+  <div class="grid2">
+    <div class="card"><b>1 · The browser (frontend)</b><p>The screens people see: buttons, forms, lists. It is a <i>React</i> application: a bundle of HTML, CSS and JavaScript that WebLogic serves from <code>frontend.war</code> at <code>/frontend</code>. It holds no data of its own; it asks the server for everything and shows the answer. It checks forms early (e.g. "Add at least one keyword") only to save the user a round-trip; the server checks again.</p></div>
+    <div class="card"><b>2 · The server (backend / API)</b><p>A <i>Spring Boot</i> program in <code>cube.war</code> at <code>/cube</code>. It exposes an <b>API</b>: a list of addresses like <code>POST /cube/api/v1/knowledge/submit</code>. For every request it answers three questions: <i>Who is this?</i> (login token), <i>Are they allowed?</i> (permissions) and <i>Is the request valid?</i> (business rules). Only then does it read or write the database.</p></div>
+    <div class="card"><b>3 · The database</b><p>Oracle schema <b>CUBEDB</b> keeps every fact as rows in tables: users, roles, knowledge items, keywords, who reports to whom, the audit trail. Tables link to each other through ID numbers. Writes happen inside a <i>transaction</i>: either all rows of one action are saved, or none.</p></div>
+    <div class="card"><b>4 · The file store</b><p>Attachments (PDF, Word, PowerPoint...) are not kept inside the database. They go to the private GitHub repository <code>103sunil/cube-attachments</code>. The database stores only the file's name, size, type and its path in GitHub, so the database stays small and fast.</p></div>
+  </div>
+
+  <div class="note"><b>Key idea: the request–response cycle.</b> Every click that needs data becomes one HTTP request from the browser to the server, carrying a login token. The server runs the checks, talks to the database (and GitHub if a file is involved), and sends back a small JSON answer, which the browser turns into the screen you see. Section 7 follows real requests through this cycle step by step.</div>
+</div>
+
+<!-- ============================ 3. ARCHITECTURE ============================ -->
+<div class="flow">
+  <h2><span class="num">3</span>How CUBE is put together and deployed</h2>
+  <p class="lead">Two files are deployed on one WebLogic server. Because both live on the same address, the browser talks to the API directly without any cross-site setup.</p>
+
+  <figure class="avoid">
+  <svg viewBox="0 0 760 300" width="100%" xmlns="http://www.w3.org/2000/svg">
+    <defs><marker id="b" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#4F46E5"/></marker></defs>
+    <g font-size="11.5">
+      <rect x="10" y="110" width="120" height="80" rx="12" fill="#DBEAFE" stroke="#93C5FD"/>
+      <text x="70" y="145" text-anchor="middle" font-weight="700" fill="#1E3A8A">Employee's</text>
+      <text x="70" y="162" text-anchor="middle" font-weight="700" fill="#1E3A8A">browser</text>
+      <rect x="165" y="20" width="370" height="265" rx="16" fill="#F8F9FC" stroke="#CBD5E1" stroke-dasharray="5 4"/>
+      <text x="350" y="42" text-anchor="middle" font-weight="700" fill="#334155">Oracle WebLogic 14.1.1 (one server)</text>
+      <rect x="185" y="58" width="330" height="62" rx="12" fill="#DBEAFE" stroke="#93C5FD"/>
+      <text x="350" y="82" text-anchor="middle" font-weight="700" fill="#1E3A8A">frontend.war → /frontend</text>
+      <text x="350" y="100" text-anchor="middle" fill="#1E3A8A">React screens (HTML, CSS, JavaScript)</text>
+      <rect x="185" y="135" width="330" height="135" rx="12" fill="#EDE9FE" stroke="#C4B5FD"/>
+      <text x="350" y="157" text-anchor="middle" font-weight="700" fill="#4C1D95">cube.war → /cube/api/v1/...</text>
+      <text x="200" y="180" fill="#4C1D95">• Security filter: checks the login token</text>
+      <text x="200" y="198" fill="#4C1D95">• Controllers: one per area (auth, knowledge,</text>
+      <text x="212" y="214" fill="#4C1D95">attachments, team, admin, storage)</text>
+      <text x="200" y="232" fill="#4C1D95">• Services: the business rules</text>
+      <text x="200" y="250" fill="#4C1D95">• Repositories: SQL to Oracle (JPA/Hibernate)</text>
+      <rect x="580" y="60" width="170" height="95" rx="12" fill="#DCFCE7" stroke="#86EFAC"/>
+      <text x="665" y="88" text-anchor="middle" font-weight="700" fill="#14532D">Oracle CUBEDB</text>
+      <text x="665" y="106" text-anchor="middle" fill="#14532D">10.20.5.10:1521</text>
+      <text x="665" y="122" text-anchor="middle" fill="#14532D">service FCUBS147X</text>
+      <text x="665" y="140" text-anchor="middle" fill="#14532D">14 tables + text index</text>
+      <rect x="580" y="180" width="170" height="85" rx="12" fill="#F3F4F6" stroke="#D1D5DB"/>
+      <text x="665" y="208" text-anchor="middle" font-weight="700" fill="#111827">GitHub (private)</text>
+      <text x="665" y="226" text-anchor="middle" fill="#111827">103sunil/cube-attachments</text>
+      <text x="665" y="244" text-anchor="middle" fill="#111827">attachments/knowledge/…</text>
+      <path d="M130,140 L183,95" stroke="#4F46E5" stroke-width="2" marker-end="url(#b)"/>
+      <path d="M130,170 L183,195" stroke="#4F46E5" stroke-width="2" marker-end="url(#b)"/>
+      <text x="120" y="112" font-size="10" fill="#4F46E5">page</text>
+      <text x="118" y="205" font-size="10" fill="#4F46E5">API calls</text>
+      <path d="M515,180 L578,115" stroke="#4F46E5" stroke-width="2" marker-end="url(#b)"/>
+      <text x="530" y="140" font-size="10" fill="#4F46E5">JDBC</text>
+      <path d="M515,225 L578,222" stroke="#4F46E5" stroke-width="2" marker-end="url(#b)"/>
+      <text x="532" y="215" font-size="10" fill="#4F46E5">HTTPS</text>
+    </g>
+  </svg>
+  <figcaption>Deployment picture. Users open <code>http://SERVER:PORT/frontend/</code>; the screens call <code>/cube/api/v1/...</code> on the same server.</figcaption>
+  </figure>
+
+  <h3>Inside the backend: four layers</h3>
+  <table>
+    <tr><th style="width:22%">Layer</th><th>What it does</th><th style="width:30%">Examples</th></tr>
+    <tr><td><b>Security filter</b></td><td>Runs before anything else on every request. Reads the token from the <code>Authorization</code> header, verifies its signature and expiry, rejects logged-out tokens, loads the user and their permissions.</td><td><code>JwtFilter</code>, <code>SecurityConfig</code></td></tr>
+    <tr><td><b>Controllers</b></td><td>Map each web address to a Java method and convert JSON in and out. No business logic.</td><td><code>KnowledgeController</code>, <code>AttachmentController</code>, <code>TeamController</code>, admin controllers</td></tr>
+    <tr><td><b>Services</b></td><td>The rules: who may approve, required fields, the reporting ladder, routing uploads to the right approver, writing the audit log. Each runs in a database transaction.</td><td><code>KnowledgeService</code>, <code>ReviewRouting</code>, <code>AdminUserService</code>, <code>TeamService</code></td></tr>
+    <tr><td><b>Repositories &amp; storage</b></td><td>Turn Java objects into SQL against Oracle; send files to GitHub (or read older files from their old location).</td><td><code>KnowledgeRepository</code>, <code>KnowledgeSearchRepository</code>, <code>GitHubFileStorageService</code></td></tr>
+  </table>
+
+  <h3>Inside the frontend</h3>
+  <p>A single-page React application (React 19 + Material UI). One page loads once; after that, moving between Discover, Approvals and the other screens only swaps the visible component and calls the API. The menu is built from the user's permissions, so people only see what they may use. Office viewers (Word, Excel, PowerPoint) are loaded only when someone opens a preview, keeping the first load fast.</p>
+</div>
+
+<!-- ============================ 4. ROLES ============================ -->
+<div class="flow">
+  <h2><span class="num">4</span>Who can do what</h2>
+  <p class="lead">Two separate ideas decide a person's place in CUBE: their <b>access</b> (what the software lets them do) and their <b>reporting line</b> (whose team they are in, and who approves their uploads).</p>
+
+  <h3>Access: modules, access codes, groups</h3>
+  <p>A permission is written <code>MODULE:ACCESS</code>. CUBE has two modules and 13 access codes:</p>
+  <table>
+    <tr><th>Module</th><th>Access codes</th></tr>
+    <tr><td><b>KNOWLEDGE</b></td><td><code>CREATE</code> (submit) · <code>VIEW</code> · <code>SEARCH</code> · <code>DOWNLOAD</code> · <code>APPROVE</code> · <code>UPDATE</code> · <code>DELETE</code></td></tr>
+    <tr><td><b>AUTH</b></td><td><code>MANAGE_USERS</code> · <code>MANAGE_GROUPS</code> · <code>MANAGE_MODULES</code> · <code>MANAGE_ACCESS</code> · <code>MANAGE_GROUP_ACCESS</code> · <code>MANAGE_USER_ACCESS</code></td></tr>
+  </table>
+  <p>Each person belongs to exactly one <b>group</b>; each group is granted a set of access codes:</p>
+  <table>
+    <tr><th style="width:20%">Group (shown as "Access")</th><th>Granted</th><th style="width:30%">Sees in the menu</th></tr>
+    <tr><td><b>Employee</b></td><td>KNOWLEDGE: CREATE, VIEW, SEARCH, DOWNLOAD</td><td>Discover, Submit, My uploads, Bookmarks</td></tr>
+    <tr><td><b>Manager / VP</b></td><td>all KNOWLEDGE codes incl. APPROVE, UPDATE, DELETE</td><td>+ Approvals, My team</td></tr>
+    <tr><td><b>Administrator</b></td><td>all AUTH codes</td><td>Admin only</td></tr>
+  </table>
+  <p><b>Effective permissions</b> = the group's granted codes, then per-person <b>overrides</b> (grant or remove one code, optionally until a date). Inactive modules, codes or groups count as not granted. All of this lives in tables, so an administrator can change who can do what in <i>Admin → Groups &amp; permissions</i> without any code change.</p>
+
+  <h3>Reporting line and levels</h3>
+  <p>Every person can have a <b>Reports to</b> (their manager) and a <b>Designation</b> (job title). The designation places them on a ladder:</p>
+  <table>
+    <tr><th>Level</th><th>Designations</th></tr>
+    <tr><td>7</td><td>Senior Vice President</td></tr><tr><td>6</td><td>Vice President</td></tr><tr><td>5</td><td>Senior Manager, Director</td></tr>
+    <tr><td>4</td><td>Manager, Head (also anyone with Manager access and no recognised title)</td></tr><tr><td>3</td><td>Team Lead</td></tr><tr><td>2</td><td>Senior Employee</td></tr><tr><td>1</td><td>Employee, Consultant, Intern, other titles</td></tr>
+  </table>
+  <div class="note"><b>Rules enforced everywhere (My team, Admin, CSV import):</b> a person may only report to someone at <b>Team Lead level or higher</b>, and <b>never to someone below their own level</b>; nobody can report to themselves or to someone in their own team. People at the top (e.g. a Senior VP) report to no one.</div>
+
+  <h3>Who approves an upload?</h3>
+  <p>The <b>nearest person above the author who has Manager / VP access</b>. Example: <i>Rahul (Consultant) → Akshay (Team Lead, employee access) → Suresh (Manager)</i>: Akshay is skipped and Suresh approves. If Akshay later gets manager access, Rahul's uploads go to Akshay. When someone moves or leaves, their waiting uploads are re-routed automatically. Uploads by managers publish directly.</p>
+</div>
+
+<!-- ============================ 5. DATABASE ============================ -->
+<div class="section">
+  <h2><span class="num">5</span>The database: 14 tables</h2>
+  <p class="lead">All tables live in the Oracle schema CUBEDB and start with <code>CU_</code>. IDs are generated by Oracle (identity columns). Row counts are from CUBEDB on 23 Nov 2026.</p>
+
+  <figure class="avoid">
+  <svg viewBox="0 0 760 360" width="100%" xmlns="http://www.w3.org/2000/svg">
+    <g font-size="10.5">
+      <!-- people & access -->
+      <rect x="10" y="10" width="360" height="340" rx="14" fill="#F0F9FF" stroke="#BAE6FD"/>
+      <text x="20" y="30" font-weight="700" fill="#075985" font-size="12">People &amp; access</text>
+      <rect x="120" y="45" width="140" height="44" rx="8" fill="#fff" stroke="#38BDF8"/><text x="190" y="64" text-anchor="middle" font-weight="700">CU_USER_MASTER</text><text x="190" y="80" text-anchor="middle" fill="#475569">people (+ reports to)</text>
+      <rect x="20" y="130" width="140" height="44" rx="8" fill="#fff" stroke="#38BDF8"/><text x="90" y="149" text-anchor="middle" font-weight="700">CU_USER_GROUP</text><text x="90" y="165" text-anchor="middle" fill="#475569">person → group</text>
+      <rect x="220" y="130" width="140" height="44" rx="8" fill="#fff" stroke="#38BDF8"/><text x="290" y="149" text-anchor="middle" font-weight="700">CU_USER_ACCESS</text><text x="290" y="165" text-anchor="middle" fill="#475569">personal overrides</text>
+      <rect x="20" y="215" width="140" height="44" rx="8" fill="#fff" stroke="#38BDF8"/><text x="90" y="234" text-anchor="middle" font-weight="700">CU_GROUP_MASTER</text><text x="90" y="250" text-anchor="middle" fill="#475569">roles</text>
+      <rect x="15" y="295" width="180" height="44" rx="8" fill="#fff" stroke="#38BDF8"/><text x="105" y="314" text-anchor="middle" font-weight="700">CU_GROUP_ACCESS_TEMPLATE</text><text x="105" y="330" text-anchor="middle" fill="#475569">role → access code</text>
+      <rect x="220" y="215" width="140" height="44" rx="8" fill="#fff" stroke="#38BDF8"/><text x="290" y="234" text-anchor="middle" font-weight="700">CU_ACCESS_MASTER</text><text x="290" y="250" text-anchor="middle" fill="#475569">access codes</text>
+      <rect x="220" y="295" width="140" height="44" rx="8" fill="#fff" stroke="#38BDF8"/><text x="290" y="314" text-anchor="middle" font-weight="700">CU_MODULE_MASTER</text><text x="290" y="330" text-anchor="middle" fill="#475569">modules</text>
+      <g stroke="#0284C7" stroke-width="1.5" fill="none">
+        <path d="M150,89 L100,130"/><path d="M230,89 L280,130"/><path d="M90,174 L90,215"/><path d="M90,259 L90,295"/>
+        <path d="M195,310 L240,259"/><path d="M290,259 L290,295"/><path d="M290,174 L290,215"/>
+        <path d="M225,45 C230,20 270,20 262,52"/>
+      </g>
+      <text x="268" y="30" fill="#0369A1" font-size="9.5">reports to</text>
+      <!-- knowledge -->
+      <rect x="390" y="10" width="360" height="245" rx="14" fill="#F5F3FF" stroke="#DDD6FE"/>
+      <text x="400" y="30" font-weight="700" fill="#5B21B6" font-size="12">Knowledge</text>
+      <rect x="500" y="45" width="140" height="44" rx="8" fill="#fff" stroke="#A78BFA"/><text x="570" y="64" text-anchor="middle" font-weight="700">CU_KNOWLEDGE</text><text x="570" y="80" text-anchor="middle" fill="#475569">items</text>
+      <rect x="400" y="125" width="150" height="44" rx="8" fill="#fff" stroke="#A78BFA"/><text x="475" y="144" text-anchor="middle" font-weight="700">CU_KNOWLEDGE_KEYWORD</text><text x="475" y="160" text-anchor="middle" fill="#475569">item ↔ keyword</text>
+      <rect x="400" y="200" width="150" height="44" rx="8" fill="#fff" stroke="#A78BFA"/><text x="475" y="219" text-anchor="middle" font-weight="700">CU_KEYWORD</text><text x="475" y="235" text-anchor="middle" fill="#475569">keyword list</text>
+      <rect x="590" y="125" width="150" height="44" rx="8" fill="#fff" stroke="#A78BFA"/><text x="665" y="144" text-anchor="middle" font-weight="700">CU_ATTACHMENT</text><text x="665" y="160" text-anchor="middle" fill="#475569">files (path in GitHub)</text>
+      <rect x="590" y="200" width="150" height="44" rx="8" fill="#fff" stroke="#A78BFA"/><text x="665" y="219" text-anchor="middle" font-weight="700">CU_BOOKMARK</text><text x="665" y="235" text-anchor="middle" fill="#475569">user ↔ saved item</text>
+      <g stroke="#7C3AED" stroke-width="1.5" fill="none"><path d="M545,89 L490,125"/><path d="M475,169 L475,200"/><path d="M600,89 L650,125"/><path d="M640,80 C720,110 735,190 705,200"/></g>
+      <!-- security -->
+      <rect x="390" y="270" width="360" height="80" rx="14" fill="#FFF1F2" stroke="#FECDD3"/>
+      <text x="400" y="290" font-weight="700" fill="#9F1239" font-size="12">Security &amp; history</text>
+      <rect x="400" y="298" width="160" height="44" rx="8" fill="#fff" stroke="#FB7185"/><text x="480" y="317" text-anchor="middle" font-weight="700">CU_AUDIT_LOG</text><text x="480" y="333" text-anchor="middle" fill="#475569">who did what, when</text>
+      <rect x="580" y="298" width="160" height="44" rx="8" fill="#fff" stroke="#FB7185"/><text x="660" y="317" text-anchor="middle" font-weight="700">CU_REVOKED_TOKEN</text><text x="660" y="333" text-anchor="middle" fill="#475569">logged-out tokens</text>
+      <!-- cross link -->
+      <path d="M260,75 L500,75" stroke="#64748B" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>
+      <text x="380" y="92" text-anchor="middle" fill="#334155" font-size="9.5">author / reviewer / assigned reviewer</text>
+    </g>
+  </svg>
+  <figcaption>How the tables relate. Lines are ID references (e.g. CU_USER_GROUP.USER_ID → CU_USER_MASTER.USER_ID).</figcaption>
+  </figure>
+
+  <h3><span class="tag t-people">People &amp; access</span> 7 tables</h3>
+  <table>
+    <tr><th style="width:24%">Table</th><th>What it is for</th><th style="width:30%">Important columns</th><th style="width:7%">Rows</th></tr>
+    <tr><td><b>CU_USER_MASTER</b></td><td>Every person who can sign in. Also holds their place in the hierarchy and job title. Deleted leavers stay as status <code>D</code> (their history remains valid) until purged.</td><td>USER_ID, USERNAME (unique), EMAIL (unique), PASSWORD_HASH (BCrypt), STATUS A/I/D, REPORTING_MANAGER_ID, EMPLOYEE_CODE, DESIGNATION, MUST_CHANGE_PASSWORD</td><td>6</td></tr>
+    <tr><td><b>CU_USER_GROUP</b></td><td>Which group (role) each person is in: exactly one per person.</td><td>USER_ID (key), GROUP_ID, STATUS</td><td>6</td></tr>
+    <tr><td><b>CU_GROUP_MASTER</b></td><td>The roles: ADMIN, EMPLOYEE, MANAGER.</td><td>GROUP_ID, GROUP_CODE (unique), GROUP_NAME, STATUS</td><td>3</td></tr>
+    <tr><td><b>CU_MODULE_MASTER</b></td><td>Areas of the application permissions belong to: KNOWLEDGE and AUTH.</td><td>MODULE_ID, MODULE_CODE (unique), STATUS</td><td>2</td></tr>
+    <tr><td><b>CU_ACCESS_MASTER</b></td><td>The 13 individual permissions (CREATE, APPROVE, MANAGE_USERS...), each inside a module.</td><td>ACCESS_ID, MODULE_ID, ACCESS_CODE (unique per module), STATUS</td><td>13</td></tr>
+    <tr><td><b>CU_GROUP_ACCESS_TEMPLATE</b></td><td>The role's permission list: group × access code, allowed Y/N.</td><td>GROUP_ID + ACCESS_ID (key), ALLOWED, STATUS</td><td>18</td></tr>
+    <tr><td><b>CU_USER_ACCESS</b></td><td>Exceptions for one person: grant or remove a single permission, optionally until an expiry date.</td><td>USER_ID + ACCESS_ID (key), ALLOWED, EXPIRY_DATE</td><td>0</td></tr>
+  </table>
+
+  <h3><span class="tag t-know">Knowledge</span> 5 tables</h3>
+  <table>
+    <tr><th style="width:24%">Table</th><th>What it is for</th><th style="width:30%">Important columns</th><th style="width:7%">Rows</th></tr>
+    <tr><td><b>CU_KNOWLEDGE</b></td><td>One row per knowledge item, with its workflow status and who reviews it. <code>SEARCH_TEXT</code> joins title, description and keywords and is indexed by Oracle Text for search.</td><td>KNOWLEDGE_ID, TITLE, DESCRIPTION, STATUS (DRAFT/PENDING/PUBLISHED/REJECTED/ARCHIVED), CREATED_BY, ASSIGNED_REVIEWER_ID, REVIEWED_BY, REJECTION_REASON, PUBLISHED_AT, SEARCH_TEXT</td><td>106</td></tr>
+    <tr><td><b>CU_KEYWORD</b></td><td>Each distinct keyword once, so the same tag is shared by many items.</td><td>KEYWORD_ID, KEYWORD_NAME (unique)</td><td>165</td></tr>
+    <tr><td><b>CU_KNOWLEDGE_KEYWORD</b></td><td>Links items to keywords (many-to-many).</td><td>KNOWLEDGE_ID + KEYWORD_ID (key)</td><td>214</td></tr>
+    <tr><td><b>CU_ATTACHMENT</b></td><td>File details for each attachment. The file itself is in GitHub; <code>ONEDRIVE_FILE_ID</code> (name kept from the old version) holds its GitHub path. Two very old files still sit in <code>FILE_DATA</code> (BLOB).</td><td>ATTACHMENT_ID, KNOWLEDGE_ID, FILE_NAME, CONTENT_TYPE, FILE_SIZE, ONEDRIVE_FILE_ID, UPLOADED_BY, UPLOADED_AT</td><td>138</td></tr>
+    <tr><td><b>CU_BOOKMARK</b></td><td>Items a person saved for later.</td><td>USER_ID + KNOWLEDGE_ID (key), CREATED_AT</td><td>2</td></tr>
+  </table>
+
+  <h3><span class="tag t-sec">Security &amp; history</span> 2 tables</h3>
+  <table>
+    <tr><th style="width:24%">Table</th><th>What it is for</th><th style="width:30%">Important columns</th><th style="width:7%">Rows</th></tr>
+    <tr><td><b>CU_AUDIT_LOG</b></td><td>Permanent trail of important actions: logins (and failed ones), submissions, approvals, rejections, user changes, imports, password changes, deletions.</td><td>ACTOR, ACTION, ENTITY_TYPE, ENTITY_ID, DETAILS, CREATED_AT</td><td>167</td></tr>
+    <tr><td><b>CU_REVOKED_TOKEN</b></td><td>Login tokens that were ended by "Log out", so they cannot be reused before they expire.</td><td>TOKEN_ID (the token's unique id), USERNAME, EXPIRES_AT, REVOKED_AT</td><td>2</td></tr>
+  </table>
+  <div class="note"><b>Plus the search index.</b> <code>CU_KNOWLEDGE_SEARCH_IDX</code> is an Oracle Text index on <code>CU_KNOWLEDGE.SEARCH_TEXT</code>, updated automatically on every commit. Oracle keeps it in 4 internal tables (<code>DR$CU_KNOWLEDGE_SEARCH_IDX$…</code>) that the application never touches directly.</div>
+</div>
+
+<!-- ============================ 6. LIFECYCLE ============================ -->
+<div class="flow">
+  <h2><span class="num">6</span>The life of a knowledge item</h2>
+  <p class="lead">The <code>STATUS</code> column of <code>CU_KNOWLEDGE</code> is the item's position in this flow. Only the transitions shown are allowed; the server refuses anything else.</p>
+  <figure class="avoid">
+  <svg viewBox="0 0 760 250" width="100%" xmlns="http://www.w3.org/2000/svg">
+    <defs><marker id="c" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#334155"/></marker></defs>
+    <g font-size="11.5">
+      <rect x="15" y="95" width="110" height="50" rx="25" fill="#F1F5F9" stroke="#94A3B8"/><text x="70" y="125" text-anchor="middle" font-weight="700" fill="#334155">DRAFT</text>
+      <rect x="210" y="95" width="120" height="50" rx="25" fill="#FEF3C7" stroke="#F59E0B"/><text x="270" y="125" text-anchor="middle" font-weight="700" fill="#92400E">PENDING</text>
+      <rect x="420" y="30" width="130" height="50" rx="25" fill="#D1FAE5" stroke="#10B981"/><text x="485" y="60" text-anchor="middle" font-weight="700" fill="#065F46">PUBLISHED</text>
+      <rect x="420" y="165" width="130" height="50" rx="25" fill="#FFE4E6" stroke="#F43F5E"/><text x="485" y="195" text-anchor="middle" font-weight="700" fill="#9F1239">REJECTED</text>
+      <rect x="625" y="30" width="125" height="50" rx="25" fill="#E2E8F0" stroke="#64748B"/><text x="687" y="60" text-anchor="middle" font-weight="700" fill="#334155">ARCHIVED</text>
+      <g stroke="#334155" stroke-width="1.6" fill="none">
+        <path d="M125,120 L208,120" marker-end="url(#c)"/>
+        <path d="M330,110 L418,62" marker-end="url(#c)"/>
+        <path d="M330,130 L418,185" marker-end="url(#c)"/>
+        <path d="M420,205 C300,240 250,200 262,147" marker-end="url(#c)"/>
+        <path d="M550,50 L623,50" marker-end="url(#c)"/>
+        <path d="M640,82 C610,110 560,90 548,75" marker-end="url(#c)"/>
+        <path d="M60,92 C80,10 380,0 430,30" marker-end="url(#c)" stroke-dasharray="5 4"/>
+      </g>
+      <text x="166" y="112" text-anchor="middle" font-size="10" fill="#334155">submit</text>
+      <text x="330" y="76" font-size="10" fill="#334155">approve</text>
+      <text x="432" y="156" font-size="10" fill="#334155">reject (reason)</text>
+      <text x="300" y="235" font-size="10" fill="#334155">edit &amp; resubmit</text>
+      <text x="586" y="42" text-anchor="middle" font-size="10" fill="#334155">archive</text>
+      <text x="600" y="112" font-size="10" fill="#334155">restore</text>
+      <text x="175" y="62" font-size="10" fill="#334155">manager submits: published directly</text>
+    </g>
+  </svg>
+  <figcaption>Workflow. Managers' own submissions skip PENDING. A manager can delete an item at any stage (with its keywords, attachment rows and files).</figcaption>
+  </figure>
+  <table>
+    <tr><th style="width:18%">Status</th><th>Who sees it</th><th>Rules</th></tr>
+    <tr><td><b>DRAFT</b></td><td>Only the author</td><td>Only a title is required. Can be edited freely.</td></tr>
+    <tr><td><b>PENDING</b></td><td>Author and the assigned approver</td><td>Needs title, description, ≥ 1 keyword, ≥ 1 attachment. The last attachment cannot be removed.</td></tr>
+    <tr><td><b>PUBLISHED</b></td><td>Everyone with VIEW</td><td>Appears in Discover and search; can be bookmarked.</td></tr>
+    <tr><td><b>REJECTED</b></td><td>Author and reviewers</td><td>Shows the reason; the author edits and resubmits.</td></tr>
+    <tr><td><b>ARCHIVED</b></td><td>Reviewers</td><td>Hidden from Discover; can be restored.</td></tr>
+  </table>
+</div>
+
+<!-- ============================ 7. TRACES ============================ -->
+<div class="section">
+  <h2><span class="num">7</span>Tracing requests end to end</h2>
+  <p class="lead">Each trace follows one real action from the click on the screen, through the server, into the database (and GitHub), and back. Labels show where each step happens: <span class="where w-ui">Screen</span> <span class="where w-api">Server</span> <span class="where w-db">Database</span> <span class="where w-gh">GitHub</span></p>
+
+  <h3>7.1 Signing in</h3>
+  <ol class="steps">
+    <li><span class="where w-ui">Screen</span>The user types username and password on the Login page and clicks <b>Sign in</b>. Empty fields are flagged immediately without calling the server.</li>
+    <li><span class="where w-ui">Screen</span>The browser sends <code>POST /cube/api/v1/auth/login</code> with <code>{"username","password"}</code>.</li>
+    <li><span class="where w-api">Server</span>If this username failed 5 times recently, the server refuses for 15 minutes (brute-force protection).</li>
+    <li><span class="where w-db">Database</span>Reads the person: <span class="sql">SELECT * FROM CU_USER_MASTER WHERE USERNAME = :username</span></li>
+    <li><span class="where w-api">Server</span>Compares the password with <code>PASSWORD_HASH</code> using BCrypt (the real password is never stored). Wrong → "Invalid username or password" and an audit row <code>LOGIN_FAILED</code>. Status <code>I</code> (inactive) or <code>D</code> (deleted) → refused.</li>
+    <li><span class="where w-api">Server</span>Creates a signed <b>JWT token</b> valid for 1 hour, carrying the username and a unique token id.</li>
+    <li><span class="where w-db">Database</span>Records it: <span class="sql">INSERT INTO CU_AUDIT_LOG (ACTOR, ACTION, ENTITY_TYPE, ENTITY_ID, CREATED_AT) VALUES ('suresh.p', 'LOGIN', 'USER', 84, SYSTIMESTAMP)</span></li>
+    <li><span class="where w-ui">Screen</span>Stores the token, then asks <code>GET /me</code> (name, email, designation, must-change-password) and <code>GET /me/permissions</code>.</li>
+    <li><span class="where w-db">Database</span>Permissions are computed: the person's group from <code>CU_USER_GROUP</code> → its grants in <code>CU_GROUP_ACCESS_TEMPLATE</code> → codes in <code>CU_ACCESS_MASTER</code> / <code>CU_MODULE_MASTER</code> → then personal overrides from <code>CU_USER_ACCESS</code>.</li>
+    <li><span class="where w-ui">Screen</span>The menu is built from those permissions and the user lands on the home page. If <code>MUST_CHANGE_PASSWORD = 'Y'</code> (temporary password), the "Choose your own password" screen appears first.</li>
+  </ol>
+
+  <h3>7.2 Every request after that</h3>
+  <ol class="steps">
+    <li><span class="where w-ui">Screen</span>Each API call carries <code>Authorization: Bearer &lt;token&gt;</code>.</li>
+    <li><span class="where w-api">Server</span>The security filter checks the signature and the 1-hour expiry.</li>
+    <li><span class="where w-db">Database</span>Checks the token was not logged out: <span class="sql">SELECT 1 FROM CU_REVOKED_TOKEN WHERE TOKEN_ID = :jti</span></li>
+    <li><span class="where w-db">Database</span>Re-reads the user from <code>CU_USER_MASTER</code>: if they were deactivated or deleted a minute ago, the request is refused immediately.</li>
+    <li><span class="where w-api">Server</span>Loads current permissions (as in 7.1 step 9) and hands the request to the controller. Any "401" makes the screen return to the login page with "Your session has ended".</li>
+  </ol>
+</div>
+
+<div>
+  <h3>7.3 An employee submits a document</h3>
+  <p><i>Rahul (Consultant, reports to Akshay, Team Lead, who reports to Suresh, Manager) submits "EOD runbook" with two keywords and a PowerPoint file.</i></p>
+  <ol class="steps">
+    <li><span class="where w-ui">Screen</span>On <b>Submit</b>, the form requires title, description, at least one keyword and one file; files over 10 MB are refused before upload.</li>
+    <li><span class="where w-ui">Screen</span>Sends <code>POST /knowledge/submit</code> as a multipart form: title, description, keywords, files.</li>
+    <li><span class="where w-api">Server</span>Checks <code>KNOWLEDGE:CREATE</code>, cleans the title (≤ 255), keywords (deduplicated, ≤ 50 characters each) and files (≤ 10 MB, ≤ 20 per request).</li>
+    <li><span class="where w-api">Server</span><b>Finds the approver</b> by walking up the reporting line until someone with APPROVE is found:
+      <span class="sql">SELECT REPORTING_MANAGER_ID FROM CU_USER_MASTER WHERE USER_ID = :rahul   -- Akshay: no APPROVE, keep going
+SELECT REPORTING_MANAGER_ID FROM CU_USER_MASTER WHERE USER_ID = :akshay  -- Suresh: has APPROVE → reviewer</span></li>
+    <li><span class="where w-db">Database</span>Creates the item:
+      <span class="sql">INSERT INTO CU_KNOWLEDGE (TITLE, DESCRIPTION, STATUS, CREATED_BY, ASSIGNED_REVIEWER_ID, SEARCH_TEXT, CREATED_AT, UPDATED_AT)
+VALUES ('EOD runbook', '…', 'PENDING', :rahul, :suresh, 'EOD runbook … eod flexcube', SYSTIMESTAMP, SYSTIMESTAMP)</span></li>
+    <li><span class="where w-db">Database</span>Keywords: reuses or creates each in <code>CU_KEYWORD</code>, then links them in <code>CU_KNOWLEDGE_KEYWORD</code>.</li>
+    <li><span class="where w-gh">GitHub</span>Uploads the file to <code>attachments/knowledge/&lt;id&gt;/&lt;random&gt;_EOD.pptx</code> in the private repository (GitHub Contents API, using the token bundled in <code>cube.war</code>).</li>
+    <li><span class="where w-db">Database</span>Records the file: <span class="sql">INSERT INTO CU_ATTACHMENT (KNOWLEDGE_ID, FILE_NAME, CONTENT_TYPE, FILE_SIZE, ONEDRIVE_FILE_ID, UPLOADED_BY, UPLOADED_AT) VALUES (…, 'attachments/knowledge/…', …)</span></li>
+    <li><span class="where w-db">Database</span>Audit row <code>KNOWLEDGE_SUBMIT</code>; the transaction commits; Oracle Text indexes <code>SEARCH_TEXT</code> at commit. <b>If anything fails, nothing is saved</b> and files already sent to GitHub are removed again.</li>
+    <li><span class="where w-ui">Screen</span>Shows "Submitted for approval" and opens the item, which shows <i>Pending · Reviewer: Suresh</i>.</li>
+  </ol>
+
+  <h3>7.4 The manager approves it</h3>
+  <ol class="steps">
+    <li><span class="where w-ui">Screen</span>Suresh opens <b>Approvals</b> → <code>GET /knowledge?status=PENDING</code>.</li>
+    <li><span class="where w-db">Database</span>Lists items waiting for him, plus unassigned ones any approver may take:
+      <span class="sql">SELECT * FROM CU_KNOWLEDGE WHERE STATUS = 'PENDING'
+  AND (ASSIGNED_REVIEWER_ID = :suresh OR ASSIGNED_REVIEWER_ID IS NULL OR ASSIGNED_REVIEWER_ID NOT IN (:active_approvers))</span>
+      Keywords, attachment counts and author names are loaded for the whole page in a few batch queries.</li>
+    <li><span class="where w-ui">Screen</span>He previews the PowerPoint (7.6) and clicks <b>Approve</b> → <code>POST /knowledge/{id}/approve</code>.</li>
+    <li><span class="where w-api">Server</span>Checks <code>KNOWLEDGE:APPROVE</code>, that the item is still PENDING, and that he is the assigned reviewer (another manager gets "not found").</li>
+    <li><span class="where w-db">Database</span><span class="sql">UPDATE CU_KNOWLEDGE SET STATUS = 'PUBLISHED', REVIEWED_BY = :suresh, REVIEWED_AT = SYSTIMESTAMP,
+       PUBLISHED_AT = SYSTIMESTAMP, REJECTION_REASON = NULL WHERE KNOWLEDGE_ID = :id</span>
+      plus audit <code>KNOWLEDGE_APPROVE</code>. Rejecting instead sets <code>STATUS = 'REJECTED'</code> and stores the required reason.</li>
+    <li><span class="where w-ui">Screen</span>The item now appears on everyone's Discover page.</li>
+  </ol>
+</div>
+
+<div>
+  <h3>7.5 Someone searches</h3>
+  <ol class="steps">
+    <li><span class="where w-ui">Screen</span>Types <i>flex runbook</i> on Discover (or clicks a "Popular" keyword) → <code>GET /knowledge/search?q=flex runbook</code>.</li>
+    <li><span class="where w-api">Server</span>Checks <code>KNOWLEDGE:SEARCH</code>, splits the words, escapes each character so words like OR/AND are never treated as commands, and adds a wildcard so each word matches the <b>start</b> of words.</li>
+    <li><span class="where w-db">Database</span>Uses the Oracle Text index, best matches first:
+      <span class="sql">SELECT KNOWLEDGE_ID FROM CU_KNOWLEDGE
+ WHERE STATUS = 'PUBLISHED' AND CONTAINS(SEARCH_TEXT, '(\f\l\e\x%) AND (\r\u\n\b\o\o\k%)', 1) > 0
+ ORDER BY SCORE(1) DESC  OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY</span></li>
+    <li><span class="where w-db">Database</span>If nothing starts with those words, it searches inside words instead (<code>LOWER(SEARCH_TEXT) LIKE '%cube%'</code>), so "cube" still finds "flexcube".</li>
+    <li><span class="where w-ui">Screen</span>Shows "<i>n</i> results for …" with cards; Clear search returns to the full list.</li>
+  </ol>
+
+  <h3>7.6 Opening (previewing) a file</h3>
+  <ol class="steps">
+    <li><span class="where w-ui">Screen</span>Clicks the eye icon next to <i>EOD.pptx</i>.</li>
+    <li><span class="where w-api">Server</span><code>GET /attachments/{id}/download</code>: checks <code>KNOWLEDGE:DOWNLOAD</code> and that the user may see the item (published, or their own, or they are its reviewer).</li>
+    <li><span class="where w-db">Database</span>Reads <code>CU_ATTACHMENT</code> to find where the bytes live.</li>
+    <li><span class="where w-gh">GitHub</span>Fetches the file from the private repository. (Older files are read from their previous disk location or from the database BLOB, so nothing old is lost.)</li>
+    <li><span class="where w-ui">Screen</span>Renders it in the browser: PDF and images directly; Word as formatted pages; Excel as sheets and a grid; PowerPoint as slides. Unsafe links in documents are removed. "Download" saves the original.</li>
+  </ol>
+
+  <h3>7.7 A manager adds a team member</h3>
+  <ol class="steps">
+    <li><span class="where w-ui">Screen</span>Suresh, in <b>My team → Add employee</b>, fills username, temporary password, email, Employee ID, Designation <i>Consultant</i>, Reports to <i>Akshay (Team Lead)</i>. The list only offers Team Leads or higher in his own team.</li>
+    <li><span class="where w-api">Server</span><code>POST /team</code>: checks APPROVE, that Akshay is in Suresh's hierarchy, the ladder rule (Team Lead ≥ Consultant), and that username, email and Employee ID are unique.</li>
+    <li><span class="where w-db">Database</span><span class="sql">INSERT INTO CU_USER_MASTER (USERNAME, EMAIL, PASSWORD_HASH, EMPLOYEE_CODE, DESIGNATION, REPORTING_MANAGER_ID, STATUS, MUST_CHANGE_PASSWORD) VALUES (…, :akshay, 'A', 'Y')
+INSERT INTO CU_USER_GROUP (USER_ID, GROUP_ID, STATUS) VALUES (:new, :EMPLOYEE, 'A')</span> plus audit <code>USER_CREATE</code>.</li>
+    <li><span class="where w-ui">Screen</span>The new person appears in My team with "Reports to: Akshay". At first sign-in they must choose their own password.</li>
+  </ol>
+
+  <h3>7.8 Someone leaves</h3>
+  <ol class="steps">
+    <li><span class="where w-ui">Screen</span>Manager (My team) or admin (Admin → Users) clicks <b>Delete</b> and confirms.</li>
+    <li><span class="where w-db">Database</span>People who reported to the leaver move up to the leaver's manager; their waiting uploads are re-routed to the right approver.</li>
+    <li><span class="where w-db">Database</span>The leaver's row becomes <code>STATUS = 'D'</code>: they can no longer sign in (even with an open session) and disappear from lists. Their published knowledge stays. An admin can <b>Restore</b> them, or remove them permanently later with script 06 (their items are handed to a chosen owner).</li>
+  </ol>
+</div>
+
+<!-- ============================ 8. SECURITY ============================ -->
+<div class="flow">
+  <h2><span class="num">8</span>Security built in</h2>
+  <table>
+    <tr><th style="width:28%">Concern</th><th>How CUBE handles it</th></tr>
+    <tr><td>Passwords</td><td>Stored only as BCrypt hashes. Temporary passwords (new accounts, resets, CSV import) must be changed at first sign-in. 5 wrong attempts lock that username for 15 minutes.</td></tr>
+    <tr><td>Sessions</td><td>Signed JWT tokens valid for 1 hour; "Log out" revokes the token in <code>CU_REVOKED_TOKEN</code>; deactivated or deleted users are blocked on their next request.</td></tr>
+    <tr><td>Permissions</td><td>Checked on the server for every request; the menu only hides what the server would refuse anyway. Items a user may not see are reported as "not found".</td></tr>
+    <tr><td>Approvals</td><td>Only the assigned approver can approve or reject; a reason is required to reject.</td></tr>
+    <tr><td>Files</td><td>Stored in a private GitHub repository; the token sits only inside <code>cube.war</code> and in a git-ignored file, never in the source repository. 10 MB per file. File names are cleaned.</td></tr>
+    <tr><td>Document preview</td><td>Office files are rendered in the browser; embedded HTML is disabled and <code>javascript:</code> links removed. Viewer libraries are pinned to patched versions (0 known vulnerabilities in shipped code).</td></tr>
+    <tr><td>Search</td><td>User input is escaped character by character before it reaches Oracle Text; all SQL uses bound parameters.</td></tr>
+    <tr><td>Traceability</td><td>Logins, failed logins, submissions, approvals, rejections, deletions, user and permission changes are written to <code>CU_AUDIT_LOG</code> (Admin → Audit log).</td></tr>
+    <tr><td>Database outage</td><td>If the database cannot be reached (e.g. VPN down), requests fail within ~10 seconds with a clear message instead of hanging.</td></tr>
+  </table>
+</div>
+
+<!-- ============================ 9. SCREENS ============================ -->
+<div class="section">
+  <h2><span class="num">9</span>The screens</h2>
+  <p class="lead">Screenshots from the current version (demo data).</p>
+  <div class="grid3">
+    <figure><img src="img/r-01-login.png"><figcaption>Sign in</figcaption></figure>
+    <figure><img src="img/r-02-discover.png"><figcaption>Discover with search and popular keywords</figcaption></figure>
+    <figure><img src="img/r-04-approvals.png"><figcaption>Approvals: assigned to you, approve or reject</figcaption></figure>
+    <figure><img src="img/r-03-team.png"><figcaption>My team: everyone under the manager</figcaption></figure>
+    <figure><img src="img/r-06-admin.png"><figcaption>Administration: users, groups, storage, audit</figcaption></figure>
+    <figure><img src="img/o-sample-deck-pptx.png"><figcaption>PowerPoint preview in the browser</figcaption></figure>
+    <figure><img src="img/o-sample-budget-xlsx.png"><figcaption>Excel preview with sheet tabs</figcaption></figure>
+    <figure><img src="img/r-05-account-menu.png"><figcaption>Account menu: role, change password, log out</figcaption></figure>
+  </div>
+</div>
+
+<!-- ============================ 10. RUNNING ============================ -->
+<div class="flow">
+  <h2><span class="num">10</span>Running it</h2>
+  <h3>Deployment on WebLogic 14.1.1</h3>
+  <ol class="steps">
+    <li>Deploy <code>backend/target/cube.war</code> (context root <code>/cube</code>). Check <code>http://SERVER:PORT/cube/api/v1/health</code> returns <code>{"status":"UP"}</code>.</li>
+    <li>Deploy <code>frontend/frontend.war</code> (context root <code>/frontend</code>) and open <code>http://SERVER:PORT/frontend/</code>.</li>
+    <li>Sign in as the administrator and check <b>Admin → File storage</b> shows "GitHub connected".</li>
+  </ol>
+  <h3>Configuration</h3>
+  <p>Everything needed is inside the WAR files: database address and account (CUBEDB at 10.20.5.10:1521/FCUBS147X), GitHub repository, branch and token, and the token-signing secret. The secrets are in a separate git-ignored file bundled into <code>cube.war</code>. Any value can still be overridden on a server with <code>-DNAME=value</code> (e.g. <code>-Dhttps.proxyHost</code> if the server needs a proxy to reach GitHub).</p>
+  <h3>Database scripts (backend/db/oracle)</h3>
+  <table>
+    <tr><th style="width:30%">Script</th><th>Purpose</th><th style="width:16%">On CUBEDB</th></tr>
+    <tr><td><code>00_upgrade_existing_cubedb.sql</code></td><td>Upgraded the previous version's schema in place; nothing deleted.</td><td>Run</td></tr>
+    <tr><td><code>04_reporting_manager.sql</code></td><td>Reporting manager, assigned reviewer, bookmarks.</td><td>Run</td></tr>
+    <tr><td><code>05_employee_details.sql</code></td><td>Employee ID, designation, must-change-password.</td><td>Run</td></tr>
+    <tr><td><code>06_purge_deleted_users.sql</code></td><td>Permanently removes deleted users; hands their items to a chosen owner.</td><td>Run when needed</td></tr>
+    <tr><td><code>01_schema</code>, <code>02_seed</code>, <code>03_oracle_text</code></td><td>Only for a brand-new empty schema (another environment).</td><td>Never</td></tr>
+  </table>
+  <h3>Technology</h3>
+  <table>
+    <tr><th style="width:25%">Part</th><th>Technology</th></tr>
+    <tr><td>Backend</td><td>Java 8, Spring Boot 2.7, Spring Security, Hibernate/JPA, JWT (jjwt), Oracle JDBC</td></tr>
+    <tr><td>Frontend</td><td>React 19, Material UI, React Router; docx-preview, pptx-preview, read-excel-file for previews; built with Vite</td></tr>
+    <tr><td>Database</td><td>Oracle (schema CUBEDB) with Oracle Text</td></tr>
+    <tr><td>Files</td><td>GitHub private repository via the GitHub REST API</td></tr>
+    <tr><td>Server</td><td>Oracle WebLogic 14.1.1.0.0</td></tr>
+    <tr><td>Quality</td><td>33 backend tests (JUnit, in-memory database), 43 frontend tests (Vitest), ESLint</td></tr>
+  </table>
+</div>
+
+<!-- ============================ 11. STATUS ============================ -->
+<div class="flow">
+  <h2><span class="num">11</span>Status, limits and next steps</h2>
+  <h3>Done</h3>
+  <ul>
+    <li>Full workflow: draft → submit → route to the right manager → approve / reject → publish → archive / restore.</li>
+    <li>Role-based access from database tables, personal overrides, and an admin console.</li>
+    <li>Team hierarchy with levels, team leads, automatic approver routing, onboarding (single and CSV), leavers.</li>
+    <li>Search with prefix matching; previews for PDF, images, text, Word, Excel and PowerPoint.</li>
+    <li>Attachments in GitHub; old attachments from the previous version still readable.</li>
+    <li>Existing data kept: the old schema was upgraded in place, not recreated.</li>
+    <li>Modern, responsive interface; both WAR files built, tested and ready for WebLogic.</li>
+  </ul>
+  <h3>Known limits</h3>
+  <ul>
+    <li>Old Office formats (.doc, .xls, .ppt) can be downloaded but not previewed.</li>
+    <li>Sessions last 1 hour; then the user signs in again.</li>
+    <li>The WebLogic server must reach <code>api.github.com</code> (possibly through the company proxy).</li>
+  </ul>
+  <div class="note warn"><b>Action items before go-live</b>
+    <ul>
+      <li><b>Regenerate the GitHub token</b> (the current one was shared in a chat), put the new one in <code>cube-secrets.properties</code> and rebuild <code>cube.war</code>.</li>
+      <li>Attachments use a <b>developer's personal GitHub account</b>. Move the repository to a company account when available (transfer the repo, new token, change owner setting).</li>
+      <li>Change the default administrator password after the first sign-in.</li>
+      <li>Ask the server team whether a proxy is needed to reach GitHub.</li>
+    </ul>
+  </div>
+  <h3>Possible next steps</h3>
+  <ul>
+    <li>Email notifications to approvers and authors.</li>
+    <li>Single sign-on with the company directory instead of separate passwords.</li>
+    <li>Usage reports (most viewed, pending per manager, time to approve).</li>
+  </ul>
+</div>
+
+<!-- ============================ APPENDIX ============================ -->
+<div class="section">
+  <h2><span class="num">A</span>Appendix: all 67 API endpoints</h2>
+  <p class="lead">All addresses start with <code>/cube/api/v1</code>. Every endpoint except login and health requires a valid token.</p>
+  <table style="font-size:8.6pt">
+    <tr><th style="width:24%">Area</th><th>Endpoints</th></tr>
+    <tr><td><b>Sign in &amp; me</b></td><td>POST /auth/login · POST /auth/logout · GET /me · GET /me/permissions · POST /me/password · GET /health</td></tr>
+    <tr><td><b>Knowledge</b></td><td>GET /knowledge/published · GET /knowledge/search · GET /knowledge/mine · GET /knowledge?status= · GET /knowledge/{id} · POST /knowledge/draft · POST /knowledge/submit · PUT /knowledge/{id} · POST /knowledge/{id}/submit · POST /knowledge/{id}/approve · POST /knowledge/{id}/reject · POST /knowledge/{id}/archive · POST /knowledge/{id}/restore · DELETE /knowledge/{id}</td></tr>
+    <tr><td><b>Bookmarks</b></td><td>GET /knowledge/bookmarks · PUT /knowledge/{id}/bookmark · DELETE /knowledge/{id}/bookmark</td></tr>
+    <tr><td><b>Attachments</b></td><td>GET /knowledge/{id}/attachments · POST /knowledge/{id}/attachments · GET /attachments/{id}/download · GET /attachments/{id}/preview · DELETE /attachments/{id}</td></tr>
+    <tr><td><b>My team</b></td><td>GET /team · GET /team/managers · POST /team · PUT /team/{id} · PUT /team/{id}/password · DELETE /team/{id}</td></tr>
+    <tr><td><b>Admin – users</b></td><td>GET /admin/users · GET /admin/users/{id} · POST /admin/users · PUT /admin/users/{id} · DELETE /admin/users/{id} · POST /admin/users/{id}/restore · PUT /admin/users/{id}/password · POST /admin/users/import · GET /admin/users/options · GET /admin/users/approvers · GET /admin/users/{id}/permissions · GET|PUT /admin/users/{id}/overrides · DELETE /admin/users/{id}/overrides/{module}/{access}</td></tr>
+    <tr><td><b>Admin – groups</b></td><td>GET|POST /admin/groups · GET|PUT|DELETE /admin/groups/{id} · GET|PUT /admin/groups/{id}/grants · DELETE /admin/groups/{id}/grants/{module}/{access}</td></tr>
+    <tr><td><b>Admin – catalogue</b></td><td>GET|POST /admin/modules · PUT|DELETE /admin/modules/{id} · GET|POST /admin/access-codes · PUT|DELETE /admin/access-codes/{id}</td></tr>
+    <tr><td><b>Admin – storage &amp; audit</b></td><td>GET /admin/storage/status · POST /admin/storage/migrate · GET /admin/audit</td></tr>
+  </table>
+</div>
+
+</body>
+</html>
